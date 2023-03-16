@@ -1,14 +1,19 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, QWidget, QHeaderView
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtCore import Qt
 from datetime import datetime
+
+from PyQt6.QtCore import QModelIndex
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, \
+    QWidget, QHeaderView
 
 
 class CustomTableWidget(QTableWidget):
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.StandardKey.Copy):
             self.copy_selection()
+        elif event.key() in (Qt.Key.Key_Delete, Qt.Key.Key_Backspace):
+            self.delete_or_clear()
         else:
             super().keyPressEvent(event)
 
@@ -33,6 +38,16 @@ class CustomTableWidget(QTableWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText('\n'.join(table_data))
 
+    def delete_or_clear(self):
+        selected_indexes = self.selectedIndexes()
+        selected_rows = sorted(set(index.row() for index in selected_indexes))
+
+        if len(selected_rows) == 1 and self.selectionModel().isRowSelected(selected_rows[0], QModelIndex()):
+            self.removeRow(selected_rows[0])
+        else:
+            for index in selected_indexes:
+                self.setItem(index.row(), index.column(), QTableWidgetItem(""))
+
 
 class TimeTracker(QMainWindow):
     def __init__(self):
@@ -50,7 +65,8 @@ class TimeTracker(QMainWindow):
         layout = QVBoxLayout(central_widget)
 
         self.table = CustomTableWidget(0, 6, self)
-        self.table.setHorizontalHeaderLabels(["Call Number", "Time Call Taken", "Time on Call", "Ticket Number", "Closed/Client/Callback", "Notes"])
+        self.table.setHorizontalHeaderLabels(
+            ["Call Number", "Time Call Taken", "Time on Call", "Ticket Number", "Closed/Client/Callback", "Notes"])
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
         self.table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
