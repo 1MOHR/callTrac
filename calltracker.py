@@ -86,13 +86,11 @@ class TimeTracker(QMainWindow):
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
 
-        call_number = f"Call {self.call_counter}"
+        call_number = f"Call {row_position + 1}"  # Use row_position + 1 as the call number
         time_taken = datetime.now().strftime("%I:%M %p")
 
         self.table.setItem(row_position, 0, QTableWidgetItem(call_number))
         self.table.setItem(row_position, 1, QTableWidgetItem(time_taken))
-
-        self.call_counter += 1
 
         self.table.setCurrentCell(row_position, 0)
 
