@@ -3,14 +3,17 @@ import sys
 from datetime import datetime
 
 from PyQt6.QtCore import QModelIndex
+from PyQt6.QtCore import QSettings
 from PyQt6.QtCore import QTimer
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtGui import QKeySequence
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, \
     QWidget, QHeaderView
 
 
 class CustomTableWidget(QTableWidget):
+
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.StandardKey.Copy):
             self.copy_selection()
@@ -78,7 +81,6 @@ class CustomTableWidget(QTableWidget):
         else:
             for index in selected_indexes:
                 self.setItem(index.row(), index.column(), QTableWidgetItem(""))
-
 
 
 class TimeTracker(QMainWindow):
@@ -171,7 +173,69 @@ class TimeTracker(QMainWindow):
 
 
 if __name__ == "__main__":
+
+    def is_dark_mode_enabled():
+        qsettings = QSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+                              QSettings.Format.NativeFormat)
+        return bool(qsettings.value("AppsUseLightTheme") == 0)
+
+
+    def set_dark_mode(app):
+        palette = QPalette()
+        palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+        palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+        palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+        palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+        palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.white)
+        palette.setColor(QPalette.ColorRole.BrightText, Qt.GlobalColor.red)
+        palette.setColor(QPalette.ColorRole.Highlight, QColor(64, 128, 224))  # Changed highlight color
+        palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)  # Changed highlighted text color
+
+        app.setPalette(palette)
+
+        style_sheet = '''
+        QTableWidget {
+            background-color: #353535;
+            gridline-color: #1E1E1E;
+        }
+        QHeaderView::section {
+            background-color: #353535;
+            color: white;
+        }
+        QPushButton {
+            background-color: #111111;
+            color: white;
+            border: 1px solid #454545;
+        }
+        QPushButton:hover {
+            background-color: #191919;
+        }
+        QPushButton:pressed {
+            background-color: #190016;
+        }
+        QWidget {
+            background-color: #070707;
+            color: white;
+        }
+        QScrollBar {
+            background-color: #353535;
+        }
+        QTableCornerButton::section {
+            background-color: #353535;
+        }
+        '''
+        app.setStyleSheet(style_sheet)
+
+
     app = QApplication(sys.argv)
+
+    if is_dark_mode_enabled():
+        set_dark_mode(app)
+
     time_tracker = TimeTracker()
     time_tracker.show()
     sys.exit(app.exec())
