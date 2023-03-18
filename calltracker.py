@@ -95,6 +95,10 @@ class TimeTracker(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.autosave_timer = QTimer(self)
+        self.end_call_button = QPushButton("End Call", self)
+        self.new_call_button = QPushButton("New Call", self)
+        self.table = CustomTableWidget(0, 6, self)
         self.call_counter = 1
 
         self.init_ui()
@@ -107,7 +111,6 @@ class TimeTracker(QMainWindow):
         central_widget = QWidget(self)
         layout = QVBoxLayout(central_widget)
 
-        self.table = CustomTableWidget(0, 6, self)
         self.table.setHorizontalHeaderLabels(
             ["Call Number", "Time Call Taken", "Time on Call", "Ticket Number", "Closed/Client/Callback", "Notes"])
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
@@ -115,17 +118,14 @@ class TimeTracker(QMainWindow):
         self.table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
         layout.addWidget(self.table)
 
-        self.new_call_button = QPushButton("New Call", self)
         self.new_call_button.clicked.connect(self.new_call)
         layout.addWidget(self.new_call_button)
 
-        self.end_call_button = QPushButton("End Call", self)
         self.end_call_button.clicked.connect(self.end_call)
         layout.addWidget(self.end_call_button)
 
         self.setCentralWidget(central_widget)
 
-        self.autosave_timer = QTimer(self)
         self.autosave_timer.timeout.connect(self.save_data)
         self.autosave_timer.start(60 * 1000)  # Save data every 60 seconds
 
