@@ -4,14 +4,10 @@ import sys
 from datetime import datetime
 
 # Import PyQt6 components
-from PyQt6.QtCore import QModelIndex
-from PyQt6.QtCore import QSettings
-from PyQt6.QtCore import QTimer
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QPalette
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QVBoxLayout, QPushButton, \
-    QWidget, QHeaderView
+from PyQt6.QtCore import QModelIndex, QSettings, Qt, QTimer
+from PyQt6.QtGui import QColor, QKeySequence, QPalette
+from PyQt6.QtWidgets import QApplication, QHeaderView, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, \
+    QVBoxLayout, QWidget
 
 
 # Define a custom QTableWidget class to handle keyboard events
@@ -193,7 +189,7 @@ def is_dark_mode_enabled():
 
 
 # Apply dark mode styles to the application
-def set_dark_mode(app):
+def set_dark_mode(app_instance):
     palette = QPalette()
     palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
     palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.white)
@@ -208,7 +204,7 @@ def set_dark_mode(app):
     palette.setColor(QPalette.ColorRole.Highlight, QColor(64, 128, 224))  # Changed highlight color
     palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)  # Changed highlighted text color
 
-    app.setPalette(palette)
+    app_instance.setPalette(palette)
 
     style_sheet = '''
     QTableWidget {
@@ -241,7 +237,7 @@ def set_dark_mode(app):
         background-color: #353535;
     }
     '''
-    app.setStyleSheet(style_sheet)
+    app_instance.setStyleSheet(style_sheet)
 
 
 # Main entry point for the application
