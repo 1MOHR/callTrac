@@ -92,9 +92,9 @@ class TimeTracker(QMainWindow):
         self.autosave_timer = QTimer(self)
         self.end_call_button = QPushButton("End Call", self)
         self.new_call_button = QPushButton("New Call", self)
-        self.new_activity_button = QPushButton("New Activity", self)  # New button for new activity
+        self.new_activity_button = QPushButton("New Activity", self)
         self.table = CustomTableWidget(0, 6, self)
-        self.activity_table = CustomTableWidget(0, 2, self)  # New table for activities
+        self.activity_table = CustomTableWidget(0, 2, self)  # Table for activities
         self.call_counter = 1
 
         self.init_ui()
@@ -113,14 +113,14 @@ class TimeTracker(QMainWindow):
         self.table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
         layout.addWidget(self.table)
 
-        self.activity_table.setHorizontalHeaderLabels(["Activity", "Notes"])  # Set labels for the new table
+        self.activity_table.setHorizontalHeaderLabels(["Activity", "Notes"])
         self.activity_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Stretch the Notes column
         self.activity_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
         self.activity_table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
         layout.addWidget(self.activity_table)
 
-        buttons_layout = QHBoxLayout()  # New layout for buttons
-        buttons_layout.addWidget(self.new_activity_button)  # Add new_activity_button to the layout
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(self.new_activity_button)
         buttons_layout.addWidget(self.new_call_button)
         layout.addLayout(buttons_layout)  # Add buttons_layout to the main layout
 
