@@ -1,5 +1,6 @@
 # Import necessary libraries
 import csv
+import os
 import sys
 from datetime import datetime
 
@@ -173,11 +174,17 @@ class TimeTracker(QMainWindow):
 
                 self.table.setItem(row_position, 2, QTableWidgetItem(f"{duration} minutes"))
 
-    # Save the table data to a CSV file
     # Save the table data to CSV files
     def save_data(self):
-        self.save_table_data(self.table, 'autosave_calls.csv')
-        self.save_table_data(self.activity_table, 'autosave_activities.csv')
+        app_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        TimeTracker.save_table_data(self.table, os.path.join(app_dir, 'autosave_calls.csv'))
+        TimeTracker.save_table_data(self.activity_table, os.path.join(app_dir, 'autosave_activities.csv'))
+
+    # Load the table data from CSV files
+    def load_data(self):
+        app_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+        TimeTracker.load_table_data(self.table, os.path.join(app_dir, 'autosave_calls.csv'))
+        TimeTracker.load_table_data(self.activity_table, os.path.join(app_dir, 'autosave_activities.csv'))
 
     @staticmethod
     def save_table_data(table, file_name):
@@ -189,11 +196,6 @@ class TimeTracker(QMainWindow):
                     item = table.item(row, col)
                     row_data.append(item.text() if item else '')
                 csv_writer.writerow(row_data)
-
-    # Load the table data from CSV files
-    def load_data(self):
-        self.load_table_data(self.table, 'autosave_calls.csv')
-        self.load_table_data(self.activity_table, 'autosave_activities.csv')
 
     @staticmethod
     def load_table_data(table, file_name):
