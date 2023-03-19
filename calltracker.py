@@ -6,13 +6,11 @@ from datetime import datetime
 # Import PyQt6 components
 from PyQt6.QtCore import QModelIndex, QSettings, Qt, QTimer
 from PyQt6.QtGui import QColor, QKeySequence, QPalette
-from PyQt6.QtWidgets import QApplication, QHeaderView, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, \
-    QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QHBoxLayout, QHeaderView, QMainWindow, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget
 
 
 # Define a custom QTableWidget class to handle keyboard events
 class CustomTableWidget(QTableWidget):
-
     # Define the custom keyPressEvent method for handling keyboard events
     def keyPressEvent(self, event):
         if event.matches(QKeySequence.StandardKey.Copy):
@@ -94,7 +92,9 @@ class TimeTracker(QMainWindow):
         self.autosave_timer = QTimer(self)
         self.end_call_button = QPushButton("End Call", self)
         self.new_call_button = QPushButton("New Call", self)
+        self.new_activity_button = QPushButton("New Activity", self)  # New button for new activity
         self.table = CustomTableWidget(0, 6, self)
+        self.activity_table = CustomTableWidget(0, 2, self)  # New table for activities
         self.call_counter = 1
 
         self.init_ui()
@@ -107,15 +107,25 @@ class TimeTracker(QMainWindow):
         central_widget = QWidget(self)
         layout = QVBoxLayout(central_widget)
 
-        self.table.setHorizontalHeaderLabels(
-            ["Call Number", "Time Call Taken", "Time on Call", "Ticket Number", "Closed/Client/Callback", "Notes"])
+        self.table.setHorizontalHeaderLabels(["Call Number", "Time Call Taken", "Time on Call", "Ticket Number", "Closed/Client/Callback", "Notes"])
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         self.table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
         self.table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
         layout.addWidget(self.table)
 
+        self.activity_table.setHorizontalHeaderLabels(["Activity", "Notes"])  # Set labels for the new table
+        self.activity_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)  # Stretch the Notes column
+        self.activity_table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectItems)
+        self.activity_table.setSelectionMode(QTableWidget.SelectionMode.ExtendedSelection)
+        layout.addWidget(self.activity_table)
+
+        buttons_layout = QHBoxLayout()  # New layout for buttons
+        buttons_layout.addWidget(self.new_activity_button)  # Add new_activity_button to the layout
+        buttons_layout.addWidget(self.new_call_button)
+        layout.addLayout(buttons_layout)  # Add buttons_layout to the main layout
+
+        self.new_activity_button.clicked.connect(self.new_activity)  # Connect new_activity_button to new_activity function
         self.new_call_button.clicked.connect(self.new_call)
-        layout.addWidget(self.new_call_button)
 
         self.end_call_button.clicked.connect(self.end_call)
         layout.addWidget(self.end_call_button)
@@ -126,6 +136,13 @@ class TimeTracker(QMainWindow):
         self.autosave_timer.start(60 * 1000)  # Save data every 60 seconds
 
         self.load_data()
+
+    # New function to create a new activity entry in the activity table
+    def new_activity(self):
+        row_position = self.activity_table.rowCount()
+        self.activity_table.insertRow(row_position)
+
+        self.activity_table.setCurrentCell(row_position, 0)
 
     # Create a new call entry in the table
     def new_call(self):
@@ -157,34 +174,44 @@ class TimeTracker(QMainWindow):
                 self.table.setItem(row_position, 2, QTableWidgetItem(f"{duration} minutes"))
 
     # Save the table data to a CSV file
+    # Save the table data to CSV files
     def save_data(self):
-        with open('autosave.csv', 'w', newline='', encoding='utf-8') as csvfile:
+        self.save_table_data(self.table, 'autosave_calls.csv')
+        self.save_table_data(self.activity_table, 'autosave_activities.csv')
+
+    @staticmethod
+    def save_table_data(table, file_name):
+        with open(file_name, 'w', newline='', encoding='utf-8') as csvfile:
             csv_writer = csv.writer(csvfile)
-            for row in range(self.table.rowCount()):
+            for row in range(table.rowCount()):
                 row_data = []
-                for col in range(self.table.columnCount()):
-                    item = self.table.item(row, col)
+                for col in range(table.columnCount()):
+                    item = table.item(row, col)
                     row_data.append(item.text() if item else '')
                 csv_writer.writerow(row_data)
 
-    # Load the table data from a CSV file
+    # Load the table data from CSV files
     def load_data(self):
+        self.load_table_data(self.table, 'autosave_calls.csv')
+        self.load_table_data(self.activity_table, 'autosave_activities.csv')
+
+    @staticmethod
+    def load_table_data(table, file_name):
         try:
-            with open('autosave.csv', 'r', newline='', encoding='utf-8') as csvfile:
+            with open(file_name, 'r', newline='', encoding='utf-8') as csvfile:
                 csv_reader = csv.reader(csvfile)
                 for row_data in csv_reader:
-                    row_position = self.table.rowCount()
-                    self.table.insertRow(row_position)
+                    row_position = table.rowCount()
+                    table.insertRow(row_position)
                     for col, data in enumerate(row_data):
-                        self.table.setItem(row_position, col, QTableWidgetItem(data))
+                        table.setItem(row_position, col, QTableWidgetItem(data))
         except FileNotFoundError:
             pass  # If the file doesn't exist, start with an empty table
 
 
 # Check if dark mode is enabled in the system settings
 def is_dark_mode_enabled():
-    qsettings = QSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
-                          QSettings.Format.NativeFormat)
+    qsettings = QSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", QSettings.Format.NativeFormat)
     return bool(qsettings.value("AppsUseLightTheme") == 0)
 
 
@@ -242,7 +269,6 @@ def set_dark_mode(app_instance):
 
 # Main entry point for the application
 if __name__ == "__main__":
-
     app = QApplication(sys.argv)
 
     if is_dark_mode_enabled():
